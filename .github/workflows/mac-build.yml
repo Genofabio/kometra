@@ -1,0 +1,286 @@
+name: Build macOS ARM64 Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: Kometra
+  BUNDLE_ID: com.genofabio.kometra
+  VERSION: 1.0.2
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-latest
+
+    steps:
+      # ==========================================================
+      # CHECKOUT
+      # ==========================================================
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ==========================================================
+      # SETUP .NET 9
+      # ==========================================================
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # ==========================================================
+      # CLEAN
+      # ==========================================================
+      - name: Clean
+        shell: bash
+        run: |
+          set -e
+          echo "=============================================="
+          echo "Cleaning"
+          echo "=============================================="
+          rm -rf Kometra/bin
+          rm -rf Kometra/obj
+          dotnet restore Kometra/Kometra.csproj
+
+      # ==========================================================
+      # PUBLISH ARM64
+      # ==========================================================
+      - name: Publish macOS ARM64
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          PUBLISH_DIR="Kometra/bin/Release/net9.0/${RID}/publish"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          
+          echo "=============================================="
+          echo "Publishing ${APP_NAME}"
+          echo "=============================================="
+          echo "RID: ${RID}"
+          echo "Publish directory: ${PUBLISH_DIR}"
+          echo "App directory: ${APP_DIR}"
+          
+          dotnet publish Kometra/Kometra.csproj \
+            -c Release \
+            -r "${RID}" \
+            --self-contained true \
+            -p:SelfContained=true \
+            -p:UseAppHost=true \
+            -p:PublishSingleFile=false \
+            -p:PublishReadyToRun=false \
+            -p:TreatWarningsAsErrors=false
+            
+          echo
+          echo "=============================================="
+          echo "Checking publish output"
+          echo "=============================================="
+          if [ ! -d "${PUBLISH_DIR}" ]; then
+            echo "ERROR: Publish directory not found:"
+            echo "${PUBLISH_DIR}"
+            exit 1
+          fi
+          
+          echo
+          echo "Publish directory:"
+          find "${PUBLISH_DIR}" -maxdepth 1 -print
+
+      # ==========================================================
+      # CHECK NATIVE EXECUTABLE
+      # ==========================================================
+      - name: Check ARM64 executable
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          PUBLISH_DIR="Kometra/bin/Release/net9.0/${RID}/publish"
+          EXEC="${PUBLISH_DIR}/${APP_NAME}"
+          
+          echo "=============================================="
+          echo "Checking native executable"
+          echo "=============================================="
+          if [ ! -f "${EXEC}" ]; then
+            echo "ERROR: Native executable not found:"
+            echo "${EXEC}"
+            exit 1
+          fi
+          
+          echo "Executable:"
+          echo "${EXEC}"
+          echo
+          echo "file:"
+          file "${EXEC}"
+          echo
+          echo "architecture:"
+          lipo -info "${EXEC}" || true
+          chmod +x "${EXEC}"
+
+      # ==========================================================
+      # CHECK APP BUNDLE
+      # ==========================================================
+      - name: Check .app bundle
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          APP_EXEC="${APP_DIR}/Contents/MacOS/${APP_NAME}"
+          PLIST="${APP_DIR}/Contents/Info.plist"
+          
+          echo "=============================================="
+          echo "Checking .app bundle"
+          echo "=============================================="
+          if [ ! -d "${APP_DIR}" ]; then
+            echo "ERROR: .app bundle not found:"
+            echo "${APP_DIR}"
+            exit 1
+          fi
+          if [ ! -f "${APP_EXEC}" ]; then
+            echo "ERROR: App executable not found:"
+            echo "${APP_EXEC}"
+            exit 1
+          fi
+          if [ ! -f "${PLIST}" ]; then
+            echo "ERROR: Info.plist not found:"
+            echo "${PLIST}"
+            exit 1
+          fi
+          
+          echo
+          echo "App executable:"
+          file "${APP_EXEC}"
+          echo
+          echo "Architecture:"
+          lipo -info "${APP_EXEC}" || true
+          echo
+          echo "Info.plist:"
+          plutil -lint "${PLIST}"
+          plutil -p "${PLIST}"
+
+      # ==========================================================
+      # REMOVE EXTENDED ATTRIBUTES
+      # ==========================================================
+      - name: Remove extended attributes
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          
+          echo "=============================================="
+          echo "Removing extended attributes"
+          echo "=============================================="
+          xattr -cr "${APP_DIR}" || true
+          echo
+          echo "Remaining attributes:"
+          xattr -lr "${APP_DIR}" || true
+
+      # ==========================================================
+      # AD-HOC CODE SIGNATURE (CRITICO PER APPLE SILICON)
+      # ==========================================================
+      - name: Ad-Hoc Code Sign
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          
+          echo "=============================================="
+          echo "Signing app with Ad-Hoc signature"
+          echo "=============================================="
+          # Il parametro -s - applica una firma Ad-Hoc (gratuita e senza certificato).
+          # --deep assicura che anche tutte le dylib interne vengano firmate correttamente.
+          # --force sovrascrive eventuali firme danneggiate o parziali generate da .NET.
+          codesign --force --deep -s - "${APP_DIR}"
+          
+          echo
+          echo "Verify signature:"
+          codesign -dv --verbose=4 "${APP_DIR}"
+
+      # ==========================================================
+      # FINAL VALIDATION
+      # ==========================================================
+      - name: Validate final app
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          APP_EXEC="${APP_DIR}/Contents/MacOS/${APP_NAME}"
+          PLIST="${APP_DIR}/Contents/Info.plist"
+          
+          echo "=============================================="
+          echo "FINAL VALIDATION"
+          echo "=============================================="
+          echo
+          echo "Executable:"
+          file "${APP_EXEC}"
+          echo
+          echo "Architecture:"
+          lipo -info "${APP_EXEC}"
+          echo
+          echo "Info.plist:"
+          plutil -lint "${PLIST}"
+          echo
+          echo "Executable permissions:"
+          ls -l "${APP_EXEC}"
+          echo
+          echo "Checking for valid Ad-Hoc code signature:"
+          codesign -dv "${APP_EXEC}" || true
+          echo
+          echo "Final .app structure:"
+          find "${APP_DIR}" -maxdepth 4 -print
+          echo
+          echo "=============================================="
+          echo "APP READY"
+          echo "=============================================="
+
+      # ==========================================================
+      # CREATE ZIP
+      # ==========================================================
+      - name: Create ZIP
+        shell: bash
+        run: |
+          set -e
+          RID="osx-arm64"
+          APP_DIR="Kometra/bin/Release/net9.0/${RID}/${APP_NAME}.app"
+          ZIP="${APP_NAME}-v${VERSION}-macos-arm64.zip"
+          
+          echo "=============================================="
+          echo "Creating ZIP"
+          echo "=============================================="
+          rm -f "${ZIP}"
+          ditto \
+            -c -k \
+            --sequesterRsrc \
+            --keepParent \
+            "${APP_DIR}" \
+            "${ZIP}"
+            
+          echo
+          echo "ZIP created:"
+          ls -lh "${ZIP}"
+
+      # ==========================================================
+      # UPLOAD ARTIFACT
+      # ==========================================================
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kometra-macOS-arm64
+          path: Kometra-v${{ env.VERSION }}-macos-arm64.zip
+          if-no-files-found: error
+
+      # ==========================================================
+      # UPLOAD RELEASE
+      # ==========================================================
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Kometra-v${{ env.VERSION }}-macos-arm64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
