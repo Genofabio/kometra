@@ -128,18 +128,26 @@ public class ManualCometAlignmentStrategy : AlignmentStrategyBase
             // 7. RICONVERSIONE COORDINATE GLOBALI
             Point2D globalCenter = new Point2D(
                 localCenter.X + roi.X + offset.X, 
-                localCenter.Y + roi.Y + offset.Y
+                localCenter.Y + roi.Y + offset.Y + 1.0f
             );
 
             // ====================================================================
             // LOG DI DEBUG GLOBALE PER TRACCIARE L'INSTABILITÀ
             // ====================================================================
-            System.Diagnostics.Debug.WriteLine($"\n--- DEBUG ALLINEAMENTO MANUALE ---");
-            System.Diagnostics.Debug.WriteLine($"File: {System.IO.Path.GetFileName(fileRef.FilePath)}");
-            System.Diagnostics.Debug.WriteLine($"Guess Iniziale (Globale): X={guess.X:F2}, Y={guess.Y:F2}");
-            System.Diagnostics.Debug.WriteLine($"Centro Trovato (Globale): X={globalCenter.X:F2}, Y={globalCenter.Y:F2}");
-            System.Diagnostics.Debug.WriteLine($"Spostamento: Delta X={globalCenter.X - guess.X:F2}, Delta Y={globalCenter.Y - guess.Y:F2}");
-            System.Diagnostics.Debug.WriteLine("----------------------------------\n");
+            // ====================================================================
+// LOG DI VERIFICA COORDINATE RAW (SISTEMA 0-INDEXED)
+// ====================================================================
+            Console.WriteLine($"\n================ TRACCIAMENTO COORDINATA Y ================");
+            Console.WriteLine($"File: {System.IO.Path.GetFileName(fileRef.FilePath)}");
+            Console.WriteLine($"Dimensioni Immagine: {workMat.Width} x {workMat.Height}");
+            Console.WriteLine($"Guess iniziale UI: X = {guess.X:F3}, Y = {guess.Y:F3}");
+            Console.WriteLine($"Centro calcolato da ALGLIB (Locale ROI): X_loc = {localCenter.X:F3}, Y_loc = {localCenter.Y:F3}");
+            Console.WriteLine($"Offset ROI applicato: roi.Y = {roi.Y}, offset.Y = {offset.Y}");
+            Console.WriteLine($"---> CENTRO FINALE RESTITUITO (0-indexed): X = {globalCenter.X:F3}, Y = {globalCenter.Y:F3}");
+            Console.WriteLine($"===========================================================\n");
+
+// Mantieni anche il Debug.WriteLine per la finestra di Output di Visual Studio
+            System.Diagnostics.Debug.WriteLine($"[ALIGNMENT ENGINE OUTPUT] Final Point: ({globalCenter.X:F3}, {globalCenter.Y:F3})");
 
             return globalCenter;
         }
