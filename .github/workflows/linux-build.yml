@@ -1,0 +1,88 @@
+name: Build Linux x64 Release (Manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: Kometra
+
+jobs:
+  build-linux-x64:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect .NET Version
+        id: detect
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          TFM=$(sed -n 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/p' Kometra.csproj | tr -d '\r' | xargs)
+          echo "TFM=$TFM" >> $GITHUB_ENV
+          
+          VER=$(echo $TFM | sed 's/[^0-9.]//g')
+          echo "DOTNET_VER=$VER.x" >> $GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VER }}
+
+      - name: Clean & Restore
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          set -e
+          rm -rf bin obj
+          dotnet restore Kometra.csproj
+
+      - name: Publish Linux x64
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          set -e
+          RID="linux-x64"
+          
+          dotnet publish Kometra.csproj \
+            -c Release \
+            -r "${RID}" \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:PublishReadyToRun=true
+
+      - name: Check Linux executable
+        shell: bash
+        run: |
+          set -e
+          RID="linux-x64"
+          PUBLISH_DIR="Kometra/bin/Release/${TFM}/${RID}/publish"
+          EXEC="${PUBLISH_DIR}/${APP_NAME}"
+          
+          if [ ! -f "${EXEC}" ]; then
+            echo "ERROR: Native executable not found: ${EXEC}"
+            exit 1
+          fi
+          
+          chmod +x "${EXEC}"
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          set -e
+          RID="linux-x64"
+          PUBLISH_DIR="Kometra/bin/Release/${TFM}/${RID}/publish"
+          
+          mkdir -p ArtifactStaging/Kometra-Linux
+          cp -r "${PUBLISH_DIR}/"* "ArtifactStaging/Kometra-Linux/"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kometra-Linux-x64
+          path: ArtifactStaging/
+          if-no-files-found: error

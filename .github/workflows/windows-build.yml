@@ -1,0 +1,81 @@
+name: Build Windows Release (Manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: Kometra
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect .NET Version
+        id: detect
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          # Ora leggiamo direttamente il file stando nella sua cartella
+          TFM=$(sed -n 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/p' Kometra.csproj | tr -d '\r' | xargs)
+          echo "TFM=$TFM" >> $GITHUB_ENV
+          
+          VER=$(echo $TFM | sed 's/[^0-9.]//g')
+          echo "DOTNET_VER=$VER.x" >> $GITHUB_ENV
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VER }}
+
+      - name: Clean & Restore
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          set -e
+          rm -rf bin obj
+          dotnet restore Kometra.csproj
+
+      - name: Publish Windows x64
+        working-directory: ./Kometra
+        shell: bash
+        run: |
+          set -e
+          RID="win-x64"
+          
+          # Forziamo esplicitamente l'icona con il percorso universale (slash in avanti)
+          dotnet publish Kometra.csproj \
+            -c Release \
+            -r "${RID}" \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:IncludeAllContentForSelfExtract=true \
+            -p:PublishReadyToRun=true \
+            -p:ApplicationIcon="Assets/Icon/icon.ico"
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          set -e
+          RID="win-x64"
+          PUBLISH_DIR="Kometra/bin/Release/${TFM}/${RID}/publish"
+          
+          # Creiamo la cartella "genitore" per ingannare il sistema di ZIP di GitHub
+          mkdir -p ArtifactStaging/Kometra-Windows
+          
+          # Copiamo i file compilati DENTRO la cartella "Kometra-Windows"
+          cp -r "${PUBLISH_DIR}/"* "ArtifactStaging/Kometra-Windows/"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kometra-Windows-x64
+          path: ArtifactStaging/     # GitHub zippa il CONTENUTO di questa cartella, preservando "Kometra-Windows"
+          if-no-files-found: error
