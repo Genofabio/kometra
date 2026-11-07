@@ -358,11 +358,8 @@
     <data name="EnhanceDescMosaic" xml:space="preserve">
     <value>Generates a 4x2 mosaic applying RVSF with different parameter combinations simultaneously. Useful for quickly comparing different filter intensities to find the optimal one.</value>
 </data>
-    <data name="EnhanceDescInvRho" xml:space="preserve">
-    <value>Pure geometric filter. Compensates for the natural light fall-off (1/radius) typical of comets. Flattens the strong central glare, allowing for the visualization of faint outer dust details.</value>
-</data>
     <data name="EnhanceDescRwm" xml:space="preserve">
-    <value>Radial Weighted Model (R.W.M.). Subtracts the sky background and multiplies each pixel by its distance from the center. Similar to Inverse Rho but often offers better contrast in peripheral areas.</value>
+    <value>Compensates for the natural drop in light ($1/\rho$) typical of comets. It flattens the intense central glow, allowing faint details of the outer dust to be seen; to achieve this, the sky background is subtracted and each pixel is multiplied by its distance from the center (R.W.M.).</value>
 </data>
     <data name="EnhanceDescMcm" xml:space="preserve">
     <value>Median Coma Model (M.C.M.). Builds a synthetic model of the comet by analyzing the median of concentric rings and subtracts it. The most robust method for isolating jets and shells without creating geometric artifacts.</value>
@@ -404,8 +401,7 @@
     <data name="EnhanceModeLarsonSym" xml:space="preserve"><value>Larson-Sekanina (Symmetric)</value></data>
     <data name="EnhanceModeRvsf" xml:space="preserve"><value>Adaptive RVSF (Single)</value></data>
     <data name="EnhanceModeMosaic" xml:space="preserve"><value>Adaptive RVSF (Mosaic)</value></data>
-    <data name="EnhanceModeInvRho" xml:space="preserve"><value>Physical Correction (1/Rho)</value></data>
-    <data name="EnhanceModeRwm" xml:space="preserve"><value>Radial Weighted Model (R.W.M.)</value></data>
+    <data name="EnhanceModeRwm" xml:space="preserve"><value>Inverse Rho (1/Rho)</value></data>
     <data name="EnhanceModeMcm" xml:space="preserve"><value>Median Coma Model (M.C.M.)</value></data>
     <data name="EnhanceModeAziAvg" xml:space="preserve"><value>Azimuthal Average</value></data>
     <data name="EnhanceModeAziMed" xml:space="preserve"><value>Azimuthal Median</value></data>

@@ -130,14 +130,15 @@ public class GradientRadialEngine : IGradientRadialEngine
     // PARTE 2: METODI RADIALI (POLARI)
     // =========================================================
 
-    public void ApplyInverseRho(Mat src, Mat dst)
-    {
-        Console.WriteLine("[DEBUG] Eseguito filtro: Inverse Rho (1/ρ)");
-        dst.Create(src.Size(), src.Type());
-        // Parametro subsampling rimosso: usa griglia 5x5 interna fissa
-        if (src.Depth() == MatType.CV_64F) InverseRhoCoreDouble(src, dst);
-        else InverseRhoCoreFloat(src, dst);
-    }
+    // Deprecato, ora si usa RWM
+    // public void ApplyInverseRho(Mat src, Mat dst)
+    // {
+    //     Console.WriteLine("[DEBUG] Eseguito filtro: Inverse Rho (1/ρ)");
+    //     dst.Create(src.Size(), src.Type());
+    //     // Parametro subsampling rimosso: usa griglia 5x5 interna fissa
+    //     if (src.Depth() == MatType.CV_64F) InverseRhoCoreDouble(src, dst);
+    //     else InverseRhoCoreFloat(src, dst);
+    // }
 
     public Mat ToPolar(Mat src, int nRad, int nTheta)
     {
@@ -623,81 +624,82 @@ public class GradientRadialEngine : IGradientRadialEngine
     // =========================================================
     // CORE METHODS INVERSE RHO (GRIGLIA FISSA 5x5)
     // =========================================================
-
-    private void InverseRhoCoreDouble(Mat src, Mat dst) {
-        int rows = src.Rows; int cols = src.Cols; double xNuc = cols / 2.0; double yNuc = rows / 2.0;
-        src.GetArray(out double[] sArr); double[] dArr = new double[sArr.Length];
-        Scalar mean = Cv2.Mean(src); double renorm = 100.0 / (Math.Abs(mean.Val0) > 1e-9 ? mean.Val0 : 1.0);
-        
-        // GRIGLIA 5x5 HARDCODED (Ottimale per velocità/qualità)
-        int steps = 5; 
-        double stepSize = 1.0 / steps;
-        double normFactor = renorm * (stepSize * stepSize); 
-
-        Parallel.For(0, rows, (int y) => {
-            int rowOffset = y * cols;
-            // Integra sul pixel: y va da y a y+1. 
-            // Relative to center: (y - yNuc) start, (y+1 - yNuc) end.
-            double basePathY = y - yNuc;
-
-            for (int x = 0; x < cols; x++) {
-                double valC = sArr[rowOffset + x];
-                if (double.IsNaN(valC) || double.IsInfinity(valC)) {
-                    dArr[rowOffset + x] = 0.0;
-                    continue;
-                }
-
-                double rhoSum = 0;
-                double basePathX = x - xNuc;
-
-                for (int m = 0; m < steps; m++) {
-                    double dy = basePathY + (m + 0.5) * stepSize;
-                    double dySq = dy * dy;
-                    for (int n = 0; n < steps; n++) {
-                        double dx = basePathX + (n + 0.5) * stepSize;
-                        rhoSum += Math.Sqrt(dx * dx + dySq);
-                    }
-                }
-                dArr[rowOffset + x] = valC * (rhoSum * normFactor);
-            }
-        }); dst.SetArray(dArr);
-    }
-
-    private void InverseRhoCoreFloat(Mat src, Mat dst) {
-        int rows = src.Rows; int cols = src.Cols; double xNuc = cols / 2.0; double yNuc = rows / 2.0;
-        src.GetArray(out float[] sArr); float[] dArr = new float[sArr.Length];
-        Scalar mean = Cv2.Mean(src); double renorm = 100.0 / (Math.Abs(mean.Val0) > 1e-9 ? mean.Val0 : 1.0);
-        
-        int steps = 5; 
-        double stepSize = 1.0 / steps;
-        double normFactor = renorm * (stepSize * stepSize);
-
-        Parallel.For(0, rows, (int y) => {
-            int rowOffset = y * cols;
-            double basePathY = y - yNuc;
-            
-            for (int x = 0; x < cols; x++) {
-                float valC = sArr[rowOffset + x];
-                if (float.IsNaN(valC) || float.IsInfinity(valC)) {
-                    dArr[rowOffset + x] = 0f;
-                    continue;
-                }
-
-                double rhoSum = 0;
-                double basePathX = x - xNuc;
-
-                for (int m = 0; m < steps; m++) {
-                    double dy = basePathY + (m + 0.5) * stepSize;
-                    double dySq = dy * dy;
-                    for (int n = 0; n < steps; n++) {
-                        double dx = basePathX + (n + 0.5) * stepSize;
-                        rhoSum += Math.Sqrt(dx * dx + dySq);
-                    }
-                }
-                dArr[rowOffset + x] = (float)(valC * (rhoSum * normFactor));
-            }
-        }); dst.SetArray(dArr);
-    }
+    
+    // Metodi deprecati, ora il filtro 1/rho utilizza RWM
+    // private void InverseRhoCoreDouble(Mat src, Mat dst) {
+    //     int rows = src.Rows; int cols = src.Cols; double xNuc = cols / 2.0; double yNuc = rows / 2.0;
+    //     src.GetArray(out double[] sArr); double[] dArr = new double[sArr.Length];
+    //     Scalar mean = Cv2.Mean(src); double renorm = 100.0 / (Math.Abs(mean.Val0) > 1e-9 ? mean.Val0 : 1.0);
+    //     
+    //     // GRIGLIA 5x5 HARDCODED (Ottimale per velocità/qualità)
+    //     int steps = 5; 
+    //     double stepSize = 1.0 / steps;
+    //     double normFactor = renorm * (stepSize * stepSize); 
+    //
+    //     Parallel.For(0, rows, (int y) => {
+    //         int rowOffset = y * cols;
+    //         // Integra sul pixel: y va da y a y+1. 
+    //         // Relative to center: (y - yNuc) start, (y+1 - yNuc) end.
+    //         double basePathY = y - yNuc;
+    //
+    //         for (int x = 0; x < cols; x++) {
+    //             double valC = sArr[rowOffset + x];
+    //             if (double.IsNaN(valC) || double.IsInfinity(valC)) {
+    //                 dArr[rowOffset + x] = 0.0;
+    //                 continue;
+    //             }
+    //
+    //             double rhoSum = 0;
+    //             double basePathX = x - xNuc;
+    //
+    //             for (int m = 0; m < steps; m++) {
+    //                 double dy = basePathY + (m + 0.5) * stepSize;
+    //                 double dySq = dy * dy;
+    //                 for (int n = 0; n < steps; n++) {
+    //                     double dx = basePathX + (n + 0.5) * stepSize;
+    //                     rhoSum += Math.Sqrt(dx * dx + dySq);
+    //                 }
+    //             }
+    //             dArr[rowOffset + x] = valC * (rhoSum * normFactor);
+    //         }
+    //     }); dst.SetArray(dArr);
+    // }
+    //
+    // private void InverseRhoCoreFloat(Mat src, Mat dst) {
+    //     int rows = src.Rows; int cols = src.Cols; double xNuc = cols / 2.0; double yNuc = rows / 2.0;
+    //     src.GetArray(out float[] sArr); float[] dArr = new float[sArr.Length];
+    //     Scalar mean = Cv2.Mean(src); double renorm = 100.0 / (Math.Abs(mean.Val0) > 1e-9 ? mean.Val0 : 1.0);
+    //     
+    //     int steps = 5; 
+    //     double stepSize = 1.0 / steps;
+    //     double normFactor = renorm * (stepSize * stepSize);
+    //
+    //     Parallel.For(0, rows, (int y) => {
+    //         int rowOffset = y * cols;
+    //         double basePathY = y - yNuc;
+    //         
+    //         for (int x = 0; x < cols; x++) {
+    //             float valC = sArr[rowOffset + x];
+    //             if (float.IsNaN(valC) || float.IsInfinity(valC)) {
+    //                 dArr[rowOffset + x] = 0f;
+    //                 continue;
+    //             }
+    //
+    //             double rhoSum = 0;
+    //             double basePathX = x - xNuc;
+    //
+    //             for (int m = 0; m < steps; m++) {
+    //                 double dy = basePathY + (m + 0.5) * stepSize;
+    //                 double dySq = dy * dy;
+    //                 for (int n = 0; n < steps; n++) {
+    //                     double dx = basePathX + (n + 0.5) * stepSize;
+    //                     rhoSum += Math.Sqrt(dx * dx + dySq);
+    //                 }
+    //             }
+    //             dArr[rowOffset + x] = (float)(valC * (rhoSum * normFactor));
+    //         }
+    //     }); dst.SetArray(dArr);
+    // }
 
 private void AzimuthalAverageCoreDouble(Mat polar, double rejSig) {
     int nRad = polar.Rows; int nTheta = polar.Cols; polar.GetArray(out double[] arr);
@@ -783,26 +785,43 @@ private void AzimuthalMedianCoreFloat(Mat polar) {
 
 private void AzimuthalRenormCoreDouble(Mat polar, double rejSig, double nSig) {
     int nRad = polar.Rows; int nTheta = polar.Cols; polar.GetArray(out double[] arr);
+    
     Parallel.For(0, nRad, (int i) => {
-        int rowOffset = i * nTheta; double sum = 0, sumSq = 0; int count = 0;
+        int rowOffset = i * nTheta; double sum = 0; int count = 0;
         
-        // FIX: Rimosso v >= 0
-        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v)) { sum += v; sumSq += v * v; count++; } }
-        if (count < 3) return; 
+        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v)) { sum += v; count++; } }
         
-        double m1 = sum / count; double s1 = Math.Sqrt(Math.Max(0, (sumSq / count) - (m1 * m1))); double rMin = m1 - rejSig * s1, rMax = m1 + rejSig * s1;
-        double cSum = 0, cSumSq = 0; int cc = 0; 
+        if (count < 3) {
+            for (int j = 0; j < nTheta; j++) arr[rowOffset + j] = 0.5;
+            return; 
+        }
         
-        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v) && v >= rMin && v <= rMax) { cSum += v; cSumSq += v * v; cc++; } }
-        if (cc < 2) return; 
+        double m1 = sum / count; 
+        double varSum = 0;
+        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v)) { varSum += (v - m1) * (v - m1); } }
+        double s1 = Math.Sqrt(varSum / count); 
+        double rMin = m1 - rejSig * s1, rMax = m1 + rejSig * s1;
         
-        double fm = cSum / cc; double fs = Math.Sqrt(Math.Max(0, (cSumSq / cc) - (fm * fm))); double rowMin = fm - nSig * fs, rowMax = fm + nSig * fs; 
-        double diff = Math.Max(1e-9, rowMax - rowMin);
+        double cSum = 0; int cc = 0; 
+        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v) && v >= rMin && v <= rMax) { cSum += v; cc++; } }
+        
+        if (cc < 2) {
+            for (int j = 0; j < nTheta; j++) arr[rowOffset + j] = 0.5;
+            return; 
+        }
+        
+        double fm = cSum / cc; 
+        double cVarSum = 0;
+        for (int j = 0; j < nTheta; j++) { double v = arr[rowOffset + j]; if (!double.IsNaN(v) && !double.IsInfinity(v) && v >= rMin && v <= rMax) { cVarSum += (v - fm) * (v - fm); } }
+        double fs = Math.Sqrt(cVarSum / cc); 
+        
+        double rowMin = fm - nSig * fs; 
+        double diff = 2.0 * nSig * fs; 
         
         for (int j = 0; j < nTheta; j++) {
             double v = arr[rowOffset + j];
-            if (double.IsNaN(v) || double.IsInfinity(v)) {
-                arr[rowOffset + j] = (fm - rowMin) / diff;
+            if (double.IsNaN(v) || double.IsInfinity(v) || diff < 1e-9) {
+                arr[rowOffset + j] = 0.5;
             } else {
                 arr[rowOffset + j] = (v - rowMin) / diff;
             }
@@ -815,7 +834,6 @@ private void AzimuthalAverageCoreFloat(Mat polar, double rejSig) {
     Parallel.For(0, nRad, (int i) => {
         int rowOffset = i * nTheta; double sum = 0, sumSq = 0; int count = 0;
         
-        // FIX: Rimosso v >= 0
         for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v)) { sum += v; sumSq += v * v; count++; } }
         if (count < 2) return; 
         
@@ -825,7 +843,6 @@ private void AzimuthalAverageCoreFloat(Mat polar, double rejSig) {
         for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v) && v >= rMin && v <= rMax) { cSum += v; cCount++; } }
         double finalMean = cCount > 0 ? cSum / cCount : m1; 
         
-        // FIX: Protezione matematica assoluta sulla divisione
         double div = finalMean;
         if (Math.Abs(div) < 1e-9) div = div >= 0 ? 1e-9 : -1e-9;
         
@@ -842,26 +859,43 @@ private void AzimuthalAverageCoreFloat(Mat polar, double rejSig) {
 
 private void AzimuthalRenormCoreFloat(Mat polar, double rejSig, double nSig) { 
     int nRad = polar.Rows; int nTheta = polar.Cols; polar.GetArray(out float[] arr);
+    
     Parallel.For(0, nRad, (int i) => {
-        int rowOffset = i * nTheta; double sum = 0, sumSq = 0; int count = 0;
+        int rowOffset = i * nTheta; double sum = 0; int count = 0;
         
-        // FIX: Rimosso v >= 0
-        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v)) { sum += v; sumSq += v * v; count++; } }
-        if (count < 3) return; 
+        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v)) { sum += v; count++; } }
         
-        double m1 = sum / count; double s1 = Math.Sqrt(Math.Max(0, (sumSq / count) - (m1 * m1))); double rMin = m1 - rejSig * s1, rMax = m1 + rejSig * s1;
-        double cSum = 0, cSumSq = 0; int cc = 0; 
+        if (count < 3) {
+            for (int j = 0; j < nTheta; j++) arr[rowOffset + j] = 0.5f;
+            return; 
+        }
         
-        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v) && v >= rMin && v <= rMax) { cSum += v; cSumSq += v * v; cc++; } }
-        if (cc < 2) return; 
+        double m1 = sum / count; 
+        double varSum = 0;
+        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v)) { varSum += (v - m1) * (v - m1); } }
+        double s1 = Math.Sqrt(varSum / count); 
+        double rMin = m1 - rejSig * s1, rMax = m1 + rejSig * s1;
         
-        double fm = cSum / cc; double fs = Math.Sqrt(Math.Max(0, (cSumSq / cc) - (fm * fm))); double rowMin = fm - nSig * fs, rowMax = fm + nSig * fs; 
-        double diff = Math.Max(1e-9, rowMax - rowMin);
+        double cSum = 0; int cc = 0; 
+        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v) && v >= rMin && v <= rMax) { cSum += v; cc++; } }
+        
+        if (cc < 2) {
+            for (int j = 0; j < nTheta; j++) arr[rowOffset + j] = 0.5f;
+            return; 
+        }
+        
+        double fm = cSum / cc; 
+        double cVarSum = 0;
+        for (int j = 0; j < nTheta; j++) { float v = arr[rowOffset + j]; if (!float.IsNaN(v) && !float.IsInfinity(v) && v >= rMin && v <= rMax) { cVarSum += (v - fm) * (v - fm); } }
+        double fs = Math.Sqrt(cVarSum / cc); 
+        
+        double rowMin = fm - nSig * fs; 
+        double diff = 2.0 * nSig * fs; 
         
         for (int j = 0; j < nTheta; j++) {
             float v = arr[rowOffset + j];
-            if (float.IsNaN(v) || float.IsInfinity(v)) {
-                arr[rowOffset + j] = (float)((fm - rowMin) / diff);
+            if (float.IsNaN(v) || float.IsInfinity(v) || diff < 1e-9) {
+                arr[rowOffset + j] = 0.5f;
             } else {
                 arr[rowOffset + j] = (float)((v - rowMin) / diff);
             }

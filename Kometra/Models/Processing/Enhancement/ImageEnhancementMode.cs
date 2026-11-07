@@ -9,7 +9,6 @@ public enum ImageEnhancementMode
     AdaptiveLaplacianMosaic,
     MedianComaModel,
     RadialWeightedModel,
-    InverseRho,
     AzimuthalAverage,
     AzimuthalMedian,
     AzimuthalRenormalization,

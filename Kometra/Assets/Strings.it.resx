@@ -296,9 +296,7 @@
     <data name="EnhanceDescLarsonSym" xml:space="preserve"><value>Evoluzione del metodo standard che somma una rotazione positiva e una negativa. Riduce drasticamente gli artefatti scuri ('buchi') tipici del metodo standard, preservando meglio il contrasto naturale.</value></data>
     <data name="EnhanceDescRvsf" xml:space="preserve"><value>Filtro a pendenza variabile (Radial Variable Slope). Modifica l'intensità del filtraggio in base alla distanza dal nucleo. Ottimizzato per seguire il naturale decadimento della luminosità della cometa.</value></data>
     <data name="EnhanceDescMosaic" xml:space="preserve"><value>Genera un mosaico 4x2 applicando l'RVSF con diverse combinazioni di parametri simultaneamente. Utile per confrontare rapidamente diverse intensità di filtro e trovare quella ottimale.</value></data>
-    <data name="EnhanceDescInvRho" xml:space="preserve"><value>Filtro geometrico puro. Compensa la naturale caduta di luce (1/raggio) tipica delle comete. Appiattisce il forte bagliore centrale permettendo di vedere i dettagli deboli della polvere esterna.</value></data>
-    <data name="EnhanceDescRwm" xml:space="preserve"><value>Modello Radiale Pesato (R.W.M.). Sottrae il fondo cielo e moltiplica ogni pixel per la sua distanza dal centro. Simile all'Inverse Rho ma spesso offre un contrasto migliore nelle zone periferiche.</value></data>
-    <data name="EnhanceDescMcm" xml:space="preserve"><value>Modello della Chioma Mediana (M.C.M.). Costruisce un modello sintetico della cometa analizzando la mediana degli anelli concentrici e lo sottrae. È il metodo più robusto per isolare getti e shell senza creare artefatti geometrici.</value></data>
+    <data name="EnhanceDescRwm" xml:space="preserve"><value>Compensa la naturale caduta di luce (1/rho) tipica delle comete. Appiattisce il forte bagliore centrale, permettendo di vedere i dettagli deboli della polvere esterna; per farlo, si sottrae il fondo cielo e si moltiplica ogni pixel per la sua distanza dal centro (R.W.M.).</value></data>    <data name="EnhanceDescMcm" xml:space="preserve"><value>Modello della Chioma Mediana (M.C.M.). Costruisce un modello sintetico della cometa analizzando la mediana degli anelli concentrici e lo sottrae. È il metodo più robusto per isolare getti e shell senza creare artefatti geometrici.</value></data>
     <data name="EnhanceDescAziAvg" xml:space="preserve"><value>Calcola la luminosità media di ogni anello concentrico e divide l'immagine per questo modello. Rimuove la simmetria radiale perfetta, lasciando visibili solo le asimmetrie (getti, code).</value></data>
     <data name="EnhanceDescAziMed" xml:space="preserve"><value>Simile alla media azimutale, ma utilizza la mediana. È molto più efficace nel gestire campi stellari densi, impedendo alle stelle di influenzare il calcolo del modello di fondo.</value></data>
     <data name="EnhanceDescAziRenorm" xml:space="preserve"><value>Normalizza il contrasto locale anello per anello. Invece di mostrare la luminosità assoluta, mostra quanto un dettaglio è 'anomalo' rispetto ai suoi vicini sullo stesso raggio. Estremamente potente per dettagli elusivi.</value></data>
@@ -314,8 +312,7 @@
     <data name="EnhanceModeLarsonSym" xml:space="preserve"><value>Larson-Sekanina (Simmetrico)</value></data>
     <data name="EnhanceModeRvsf" xml:space="preserve"><value>RVSF Adattivo (Singolo)</value></data>
     <data name="EnhanceModeMosaic" xml:space="preserve"><value>RVSF Adattivo (Mosaico)</value></data>
-    <data name="EnhanceModeInvRho" xml:space="preserve"><value>Correzione Fisica (1/Rho)</value></data>
-    <data name="EnhanceModeRwm" xml:space="preserve"><value>Radial Weighted Model (R.W.M.)</value></data>
+    <data name="EnhanceModeRwm" xml:space="preserve"><value>Correzione Fisica (1/Rho)</value></data>
     <data name="EnhanceModeMcm" xml:space="preserve"><value>Median Coma Model (M.C.M.)</value></data>
     <data name="EnhanceModeAziAvg" xml:space="preserve"><value>Media Azimutale</value></data>
     <data name="EnhanceModeAziMed" xml:space="preserve"><value>Mediana Azimutale</value></data>

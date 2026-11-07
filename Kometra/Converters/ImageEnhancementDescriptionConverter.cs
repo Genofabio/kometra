@@ -28,9 +28,6 @@ public class ImageEnhancementDescriptionConverter : IValueConverter
                     LocalizationManager.Instance["EnhanceDescMosaic"],
 
                 // --- Polar & Digital Models (Geometria) ---
-                ImageEnhancementMode.InverseRho => 
-                    LocalizationManager.Instance["EnhanceDescInvRho"],
-
                 ImageEnhancementMode.RadialWeightedModel =>
                     LocalizationManager.Instance["EnhanceDescRwm"],
 

@@ -374,7 +374,7 @@ public partial class BoardViewModel : ObservableObject
         await RunGenericProcessing(async (files, mode) => 
         {
             var paths = await _windowService.ShowPosterizationWindowAsync(files, mode);
-            return paths != null ? (paths, "(Posterizzata)") : null;
+            return paths != null ? (paths, "(Posterized)") : null;
         }, "Posterizzazione");
     }
     
@@ -384,7 +384,7 @@ public partial class BoardViewModel : ObservableObject
         await RunGenericProcessing(async (files, mode) => 
         {
             var paths = await _windowService.ShowAlignmentWindowAsync(files, mode);
-            return paths != null ? (paths, "(Allineata)") : null;
+            return paths != null ? (paths, "(Aligned)") : null;
         }, "Allineamento");
     }
     
@@ -435,19 +435,18 @@ public partial class BoardViewModel : ObservableObject
         {
             ImageEnhancementMode.LarsonSekaninaStandard => "(Larson-Sekanina)",
             ImageEnhancementMode.LarsonSekaninaSymmetric => "(Larson-Sek. Simm.)",
-            ImageEnhancementMode.AdaptiveLaplacianRVSF => "(RVSF Adattivo)",
-            ImageEnhancementMode.AdaptiveLaplacianMosaic => "(RVSF Mosaico)",
-            ImageEnhancementMode.InverseRho => "(1/Rho)",
-            ImageEnhancementMode.AzimuthalAverage => "(Media Azimutale)",
-            ImageEnhancementMode.AzimuthalMedian => "(Mediana Azimutale)",
-            ImageEnhancementMode.AzimuthalRenormalization => "(Rinormalizzazione)",
+            ImageEnhancementMode.AdaptiveLaplacianRVSF => "(Adaptive RVSF)",
+            ImageEnhancementMode.AdaptiveLaplacianMosaic => "(Mosaic RVSF)",
+            ImageEnhancementMode.AzimuthalAverage => "(Azimuthal Average)",
+            ImageEnhancementMode.AzimuthalMedian => "(Azimuthal Median)",
+            ImageEnhancementMode.AzimuthalRenormalization => "(Renormalization)",
             ImageEnhancementMode.FrangiVesselnessFilter => "(Frangi Vesselness)",
-            ImageEnhancementMode.StructureTensorCoherence => "(Tensore Struttura)",
+            ImageEnhancementMode.StructureTensorCoherence => "(Structure Tensor)",
             ImageEnhancementMode.WhiteTopHatExtraction => "(Top-Hat)",
             ImageEnhancementMode.UnsharpMaskingMedian => "(Unsharp Masking)",
             ImageEnhancementMode.ClaheLocalContrast => "(CLAHE)",
             ImageEnhancementMode.AdaptiveLocalNormalization => "(LSN)",
-            _ => "(Filtrata)"
+            _ => "(Filtered)"
         };
     }
 

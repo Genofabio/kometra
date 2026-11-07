@@ -96,7 +96,7 @@ public class ImageEnhancementCoordinator : IImageEnhancementCoordinator
                 _metadataService.AddValue(header, "NAXIS1", processingResult.Cols, "New Width");
                 _metadataService.AddValue(header, "NAXIS2", processingResult.Rows, "New Height");
                 
-                if (mode == ImageEnhancementMode.InverseRho || mode == ImageEnhancementMode.AzimuthalAverage)
+                if (mode == ImageEnhancementMode.AzimuthalAverage)
                      _metadataService.AddValue(header, "HISTORY", "Geometry: Radial/Polar Transform applied");
             }
 
@@ -153,8 +153,8 @@ public class ImageEnhancementCoordinator : IImageEnhancementCoordinator
             case ImageEnhancementMode.AdaptiveLaplacianMosaic:
                 await _radialEngine.ApplyRVSFMosaicAsync(src, dst, (p.ParamA_1, p.ParamA_2), (p.ParamB_1, p.ParamB_2), (p.ParamN_1, p.ParamN_2), p.UseLog); break;
             
-            case ImageEnhancementMode.InverseRho:
-                await Task.Run(() => _radialEngine.ApplyInverseRho(src, dst), token); break;
+            // case ImageEnhancementMode.InverseRho:
+            //     await Task.Run(() => _radialEngine.ApplyInverseRho(src, dst), token); break;
 
             case ImageEnhancementMode.RadialWeightedModel:
                 await Task.Run(() => _radialEngine.ApplyRadialWeightedModel(src, dst, p.RadialMaxRadius), token); 
@@ -228,9 +228,6 @@ public class ImageEnhancementCoordinator : IImageEnhancementCoordinator
 
             ImageEnhancementMode.AzimuthalAverage or ImageEnhancementMode.AzimuthalMedian or ImageEnhancementMode.AzimuthalRenormalization => 
                 $"RejSig={p.AzimuthalRejSigma}, NormSig={p.AzimuthalNormSigma}", 
-
-            ImageEnhancementMode.InverseRho => 
-                $"Method=Integration5x5",
             
             ImageEnhancementMode.RadialWeightedModel =>
                 $"MaxRadius={(p.RadialMaxRadius > 0 ? p.RadialMaxRadius.ToString("F1") : "Full")}, Background=Auto",

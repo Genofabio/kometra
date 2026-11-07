@@ -21,7 +21,6 @@ public class ImageEnhancementModeConverter : IValueConverter
                 ImageEnhancementMode.AdaptiveLaplacianMosaic => LocalizationManager.Instance["EnhanceModeMosaic"],
                 
                 // --- Geometric Models (Filtri Fisici) ---
-                ImageEnhancementMode.InverseRho => LocalizationManager.Instance["EnhanceModeInvRho"],
                 ImageEnhancementMode.RadialWeightedModel => LocalizationManager.Instance["EnhanceModeRwm"],
                 ImageEnhancementMode.MedianComaModel => LocalizationManager.Instance["EnhanceModeMcm"],
 
