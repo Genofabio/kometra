@@ -1,6 +1,8 @@
 name: Build macOS ARM64 Release (Manual)
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -8,8 +10,6 @@ permissions:
 
 env:
   APP_NAME: Kometra
-  # BUNDLE_ID rimosso, non serve qui se lo specifichi già nel .csproj
-  # VERSION rimossa per renderlo generico
 
 jobs:
   build-macos-arm64:
@@ -101,7 +101,6 @@ jobs:
           
           mkdir -p ArtifactStaging
           
-          # Creiamo lo ZIP manualmente con ditto (preserva gli attributi Mac e la firma)
           echo "Compressing .app to ZIP preserving Mac attributes..."
           ditto -c -k --keepParent "${APP_DIR}" "ArtifactStaging/${APP_NAME}-macOS-arm64.zip"
 

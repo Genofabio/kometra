@@ -1,6 +1,8 @@
 name: Build Linux x64 Release (Manual)
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:

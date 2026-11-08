@@ -1,6 +1,8 @@
 name: Build Windows Release (Manual)
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -22,7 +24,6 @@ jobs:
         working-directory: ./Kometra
         shell: bash
         run: |
-          # Ora leggiamo direttamente il file stando nella sua cartella
           TFM=$(sed -n 's/.*<TargetFramework>\(.*\)<\/TargetFramework>.*/\1/p' Kometra.csproj | tr -d '\r' | xargs)
           echo "TFM=$TFM" >> $GITHUB_ENV
           
@@ -49,7 +50,6 @@ jobs:
           set -e
           RID="win-x64"
           
-          # Forziamo esplicitamente l'icona con il percorso universale (slash in avanti)
           dotnet publish Kometra.csproj \
             -c Release \
             -r "${RID}" \
@@ -67,15 +67,13 @@ jobs:
           RID="win-x64"
           PUBLISH_DIR="Kometra/bin/Release/${TFM}/${RID}/publish"
           
-          # Creiamo la cartella "genitore" per ingannare il sistema di ZIP di GitHub
           mkdir -p ArtifactStaging/Kometra-Windows
           
-          # Copiamo i file compilati DENTRO la cartella "Kometra-Windows"
           cp -r "${PUBLISH_DIR}/"* "ArtifactStaging/Kometra-Windows/"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kometra-Windows-x64
-          path: ArtifactStaging/     # GitHub zippa il CONTENUTO di questa cartella, preservando "Kometra-Windows"
+          path: ArtifactStaging/     
           if-no-files-found: error
