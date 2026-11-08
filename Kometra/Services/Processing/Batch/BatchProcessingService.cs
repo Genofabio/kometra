@@ -68,8 +68,6 @@ public class BatchProcessingService : IBatchProcessingService
         var files = sourceFiles.ToList();
         var results = new List<string>();
 
-        if (!Directory.Exists(outputFolder)) Directory.CreateDirectory(outputFolder);
-
         for (int i = 0; i < files.Count; i++)
         {
             // Controllo token PRIMA di iniziare il file
